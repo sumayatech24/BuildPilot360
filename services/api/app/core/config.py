@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     database_url: str = "sqlite:///./buildpilot360.db"
+    # Optional dedicated Postgres schema to isolate tables on a shared database.
+    db_schema: str = ""
 
     jwt_secret: str = "change-me-to-a-long-random-string"
     jwt_algorithm: str = "HS256"
