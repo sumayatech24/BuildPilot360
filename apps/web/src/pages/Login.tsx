@@ -6,8 +6,9 @@ import { USE_LOCAL } from "../api";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Demo credentials match the seeded owner so the deployed app logs in out of the box.
   const [email, setEmail] = useState("owner@buildpilot360.dev");
-  const [password, setPassword] = useState("ChangeMe123!");
+  const [password, setPassword] = useState(USE_LOCAL ? "demo" : "Bp360-Owner!2026");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -33,10 +34,15 @@ export default function Login() {
           <h2>BuildPilot360</h2>
           <div className="sub">AI SDLC Delivery Platform</div>
         </div>
-        {USE_LOCAL && (
+        {USE_LOCAL ? (
           <div className="demo-note">
             Demo mode — runs entirely in your browser (no server). Any credentials work;
             your data is saved locally. The full FastAPI backend is in the repo for production.
+          </div>
+        ) : (
+          <div className="demo-note">
+            Demo credentials are pre-filled — just click <b>Sign in</b>. (Rotate the owner
+            password after first login.)
           </div>
         )}
         <label>Email</label>
