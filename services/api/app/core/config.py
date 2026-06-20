@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     ai_api_key: str = ""
     ai_model: str = ""
 
+    # Auto-create tables + seed master/config + load the blueprint on first boot.
+    # Lets a hosted deploy come up populated with no manual step.
+    seed_on_start: bool = False
+
     seed_owner_email: str = "owner@buildpilot360.dev"
     seed_owner_password: str = "ChangeMe123!"
     seed_tenant_name: str = "BuildPilot360"

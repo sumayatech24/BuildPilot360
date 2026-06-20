@@ -57,3 +57,5 @@ Thumbs.db
 
 # TS build cache
 *.tsbuildinfo
+.claude/scheduled_tasks.lock
+.claude/*.lock

@@ -15,6 +15,13 @@ from app.routers import auth, catalog, modules, projects, requirements, stories
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    if settings.seed_on_start:
+        # Idempotent: safe on every boot. Populates roles, lifecycle, blueprint catalog + owner.
+        try:
+            from app.seed import seed
+            seed()
+        except Exception as exc:  # noqa: BLE001 - never block startup on seed
+            print(f"[startup] seed skipped: {exc}")
     yield
 
 

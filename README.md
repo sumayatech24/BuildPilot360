@@ -2,10 +2,15 @@
 
 **AI SDLC Delivery Platform** — turn raw requirements into governed, traceable, AI-assisted software delivery: requirement intake → AI analysis → backlog generation → test design → PM/Git sync → CI/CD → cloud & data deployment, with token-safe LLM execution and manual verification gates.
 
-> **▶ Live demo:** https://sumayatech24.github.io/BuildPilot360/
-> Runs fully in the browser (no server) — browse all 27 modules, 1268 features, 470 stories,
-> 60 NFRs, and try the requirement → AI analysis → backlog → lifecycle flow. Sign in with any
-> credentials. The production FastAPI backend (multi-tenant, RBAC, audit) is in `services/api`.
+> **▶ Deploy the full stack (free) — Postgres + API + web:**
+>
+> [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sumayatech24/BuildPilot360)
+>
+> One click reads [`render.yaml`](render.yaml) and provisions a free PostgreSQL database, the
+> FastAPI backend (Docker, auto-seeded on first boot), and the web app — all wired together.
+> Validated end-to-end against real Postgres via Docker.
+>
+> Static browser-only demo (no backend): https://sumayatech24.github.io/BuildPilot360/
 
 Built from the *AI Automated SDLC Platform Blueprint (v3)* — 27 modules, 1248 planned features, 450 user stories, 74 DB tables. This repository implements the **Phase 0 foundation + start of the Phase 1 MVP** as a fully runnable product across three delivery targets.
 

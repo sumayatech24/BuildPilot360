@@ -7,8 +7,20 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from app.core.config import settings
 
-connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
-engine = create_engine(settings.database_url, echo=False, connect_args=connect_args)
+
+def _normalize(url: str) -> str:
+    """Managed Postgres providers hand out 'postgresql://…'. Pin the psycopg v3 driver
+    so SQLAlchemy uses the installed binary instead of the absent psycopg2."""
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+    if url.startswith("postgresql://"):
+        url = "postgresql+psycopg://" + url[len("postgresql://"):]
+    return url
+
+
+DATABASE_URL = _normalize(settings.database_url)
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True, connect_args=connect_args)
 
 
 def init_db() -> None:
