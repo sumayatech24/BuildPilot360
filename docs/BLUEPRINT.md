@@ -19,10 +19,15 @@ the rest as the roadmap.
 | M20 AI Prompt & Model Management | AI Platform | MVP | **Partial** — model routing in AI adapter |
 | M21 Reporting, Governance & Audit | Governance | MVP | **Partial** — audit log + dashboard |
 | M23 Admin Configuration | Core | MVP | **Partial** — DB-driven config tables |
-| M09–M19, M22, M24 | Eng/DevOps/Cloud/Mobile | Phase 2+ | Planned |
-| M25 GCP Dev & Deployment | Cloud | Phase 4 | Planned (DeploymentAdapter) |
-| M26 Data Pipelines & Orchestration | Data | Phase 4 | Planned |
-| M27 Data Platform Integrations | Data | Phase 4 | Planned |
+| M09–M19, M22, M24 | Eng/DevOps/Cloud/Mobile | Phase 2+ | **Engine-backed** — generic CRUD/search/bulk/lifecycle live; bespoke logic planned |
+| M25 GCP Dev & Deployment | Cloud | Phase 4 | **Engine-backed**; DeploymentAdapter planned |
+| M26 Data Pipelines & Orchestration | Data | Phase 4 | **Engine-backed**; pipeline designer planned |
+| M27 Data Platform Integrations | Data | Phase 4 | **Engine-backed**; platform adapters planned |
+
+> **Every module is operational today** via the metadata-driven module engine
+> (`/api/v1/modules/{id}/records`): tenant-scoped create/read/update/delete/bulk, RBAC-gated and
+> audited, with the module's full planned-feature list visible in its workspace. "Implemented" above
+> means the module also has bespoke domain logic beyond the generic engine.
 
 ## Implemented now
 
