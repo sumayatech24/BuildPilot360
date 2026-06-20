@@ -1,0 +1,20 @@
+{
+  "name": "@buildpilot360/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BuildPilot360 desktop app (Windows .exe + macOS .dmg)",
+  "main": "main.js",
+  "author": "BuildPilot360",
+  "scripts": {
+    "dev": "cross-env BP360_DEV=1 electron .",
+    "prebuild": "node ../../scripts/generate-icons.mjs && node ./scripts/bundle-web.mjs",
+    "build:win": "npm run prebuild && electron-builder --win nsis portable",
+    "build:mac": "npm run prebuild && electron-builder --mac dmg",
+    "build:all": "npm run prebuild && electron-builder -mw"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}

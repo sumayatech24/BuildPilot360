@@ -1,0 +1,26 @@
+{
+  "name": "BuildPilot360 Brand Palette",
+  "colors": {
+    "indigo": "#4f46e5",
+    "indigoBright": "#6366f1",
+    "sky": "#0ea5e9",
+    "cyan": "#06b6d4",
+    "cyanBright": "#22d3ee",
+    "ink": "#0f172a",
+    "inkSoft": "#15233b",
+    "slate": "#64748b",
+    "slateLine": "#e2e8f0",
+    "surface": "#ffffff",
+    "surfaceDark": "#0b1220",
+    "success": "#16a34a",
+    "warning": "#d97706",
+    "danger": "#dc2626"
+  },
+  "gradient": {
+    "brand": ["#4f46e5", "#0ea5e9", "#06b6d4"]
+  },
+  "font": {
+    "sans": "Inter, 'Segoe UI', Helvetica, Arial, sans-serif",
+    "mono": "'JetBrains Mono', 'Cascadia Code', Consolas, monospace"
+  }
+}

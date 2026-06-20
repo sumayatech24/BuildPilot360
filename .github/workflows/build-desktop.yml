@@ -1,0 +1,49 @@
+name: Build desktop installers
+
+# Produces Windows (.exe NSIS + portable) and macOS (.dmg) installers on native runners.
+# macOS installers MUST be built on macOS — that's why this is matrixed across runners.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: build:win
+            artifact: windows-installers
+          - os: macos-latest
+            target: build:mac
+            artifact: macos-dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build installers
+        working-directory: apps/desktop
+        run: npm run ${{ matrix.target }}
+        env:
+          # Point the packaged desktop app at the hosted API (set as a repo variable).
+          BP360_API_BASE: ${{ vars.BP360_API_BASE }}
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.dmg
+          if-no-files-found: ignore

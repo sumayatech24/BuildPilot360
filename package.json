@@ -1,0 +1,27 @@
+{
+  "name": "buildpilot360",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BuildPilot360 — AI SDLC Delivery Platform (web + desktop + API)",
+  "workspaces": [
+    "apps/web",
+    "apps/desktop",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @buildpilot360/web",
+    "build:web": "npm run build --workspace @buildpilot360/web",
+    "dev:desktop": "npm run dev --workspace @buildpilot360/desktop",
+    "build:desktop:win": "npm run build:win --workspace @buildpilot360/desktop",
+    "build:desktop:mac": "npm run build:mac --workspace @buildpilot360/desktop",
+    "gen:icons": "node scripts/generate-icons.mjs",
+    "api": "python -m uvicorn app.main:app --reload --app-dir services/api"
+  },
+  "devDependencies": {
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,51 @@
+appId: dev.buildpilot360.desktop
+productName: BuildPilot360
+copyright: Copyright © BuildPilot360
+# Pinned because npm workspaces hoist electron to the repo-root node_modules,
+# which defeats electron-builder's auto-detection. Keep in sync with package.json.
+electronVersion: 33.4.11
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - main.js
+  - preload.js
+  - renderer/**/*
+  - package.json
+
+# Windows: NSIS installer (.exe) + a portable .exe
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: BuildPilot360
+
+# macOS: .dmg (build on macOS / CI runner)
+mac:
+  icon: build/icon.icns
+  category: public.app-category.developer-tools
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+
+dmg:
+  title: BuildPilot360
+
+# Linux AppImage included for completeness (server/desktop installs)
+linux:
+  icon: build/icon.png
+  category: Development
+  target:
+    - AppImage

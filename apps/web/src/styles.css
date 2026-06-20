@@ -1,0 +1,85 @@
+:root {
+  --indigo: #4f46e5;
+  --sky: #0ea5e9;
+  --cyan: #06b6d4;
+  --ink: #0f172a;
+  --ink-soft: #15233b;
+  --slate: #64748b;
+  --line: #e2e8f0;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --radius: 12px;
+  --brand-grad: linear-gradient(135deg, #4f46e5, #0ea5e9 55%, #06b6d4);
+  font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); }
+
+a { color: var(--sky); text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* Layout */
+.app-shell { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.sidebar { background: var(--ink); color: #cbd5e1; padding: 20px 16px; display: flex; flex-direction: column; gap: 6px; }
+.sidebar .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+.sidebar .brand img { width: 34px; height: 34px; }
+.sidebar .brand b { color: #fff; font-size: 17px; font-weight: 600; }
+.sidebar .brand span { color: var(--sky); }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #cbd5e1; font-size: 14px; }
+.nav-link:hover { background: #1e293b; color: #fff; }
+.nav-link.active { background: var(--brand-grad); color: #fff; }
+.sidebar .spacer { flex: 1; }
+.sidebar .who { font-size: 12px; color: #94a3b8; padding: 8px; border-top: 1px solid #1e293b; }
+
+.main { padding: 28px 36px; overflow-y: auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.topbar h1 { font-size: 22px; margin: 0; font-weight: 600; }
+.topbar p { margin: 2px 0 0; color: var(--slate); font-size: 14px; }
+
+/* Cards */
+.grid { display: grid; gap: 18px; }
+.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.card h3 { margin: 0 0 4px; font-size: 14px; color: var(--slate); font-weight: 500; }
+.stat { font-size: 30px; font-weight: 600; }
+.stat .unit { font-size: 14px; color: var(--slate); font-weight: 400; margin-left: 4px; }
+
+/* Forms */
+label { display: block; font-size: 13px; color: var(--slate); margin: 12px 0 4px; }
+input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; }
+input:focus, textarea:focus { outline: 2px solid var(--sky); border-color: transparent; }
+textarea { min-height: 110px; resize: vertical; }
+.btn { background: var(--brand-grad); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+
+/* Misc */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #eef2ff; color: var(--indigo); }
+.badge.p0 { background: #fee2e2; color: #b91c1c; }
+.badge.confidence { background: #dcfce7; color: #15803d; }
+.error { color: var(--danger); font-size: 13px; margin-top: 8px; }
+.muted { color: var(--slate); font-size: 13px; }
+.list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.list-row:last-child { border-bottom: none; }
+
+/* Login */
+.login-wrap { min-height: 100vh; display: grid; place-items: center; background: radial-gradient(1200px 600px at 30% -10%, #1e293b, var(--ink)); }
+.login-card { width: 380px; background: #fff; border-radius: 16px; padding: 32px; }
+.login-card .brand { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 8px; }
+.login-card .brand img { width: 64px; height: 64px; }
+.login-card h2 { text-align: center; margin: 4px 0 2px; }
+.login-card .sub { text-align: center; color: var(--slate); font-size: 13px; margin-bottom: 12px; }
+
+/* Kanban */
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: 260px; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
+.column { background: #f1f5f9; border-radius: 12px; padding: 12px; }
+.column h4 { margin: 0 0 10px; font-size: 13px; color: var(--ink-soft); }
+.column .count { color: var(--slate); font-weight: 400; }
+.story-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.story-card .title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }

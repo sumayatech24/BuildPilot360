@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Builds
+dist/
+build/
+out/
+release/
+apps/web/dist/
+apps/desktop/release/
+apps/desktop/renderer/
+*.local
+
+# Electron build artifacts
+apps/desktop/build/icon.ico
+apps/desktop/build/icon.icns
+apps/desktop/build/icon.png
+apps/desktop/build/*.png
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local Claude Code settings
+.claude/settings.local.json
