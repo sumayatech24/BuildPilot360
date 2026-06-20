@@ -61,3 +61,45 @@ def test_full_flow():
 
 def test_rbac_blocks_unauthenticated():
     assert client.get("/api/v1/projects").status_code == 401
+
+
+def test_full_catalog_loaded():
+    h = {"Authorization": f"Bearer {_token()}"}
+    summary = client.get("/api/v1/catalog/summary", headers=h).json()
+    totals = summary["totals"]
+    assert totals["modules"] == 27
+    assert totals["features"] >= 1248
+    assert totals["user_stories"] >= 450
+    assert totals["nfrs"] == 60
+
+    # Filter features by module
+    feats = client.get("/api/v1/catalog/feature", headers=h,
+                       params={"module_id": "M01", "limit": 5}).json()
+    assert feats["total"] > 0
+    assert all(i["module_id"] == "M01" for i in feats["items"])
+
+
+def test_generic_module_engine():
+    h = {"Authorization": f"Bearer {_token()}"}
+    mods = client.get("/api/v1/modules", headers=h).json()
+    assert len(mods) == 27
+
+    # Create -> list -> update -> delete a record on module M08 (Test Design)
+    created = client.post("/api/v1/modules/M08/records", headers=h,
+                         json={"title": "Regression pack for checkout", "priority": "P1",
+                               "data": {"coverage": "smoke"}})
+    assert created.status_code == 201, created.text
+    rid = created.json()["id"]
+
+    listed = client.get("/api/v1/modules/M08/records", headers=h).json()
+    assert listed["total"] == 1
+
+    upd = client.put(f"/api/v1/modules/M08/records/{rid}", headers=h,
+                    json={"title": "Regression pack v2", "status": "in_review", "data": {}})
+    assert upd.status_code == 200 and upd.json()["title"] == "Regression pack v2"
+
+    assert client.delete(f"/api/v1/modules/M08/records/{rid}", headers=h).status_code == 204
+    assert client.get("/api/v1/modules/M08/records", headers=h).json()["total"] == 0
+
+    # Unknown module rejected
+    assert client.get("/api/v1/modules/M99/records", headers=h).status_code == 404

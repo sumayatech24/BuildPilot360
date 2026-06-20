@@ -64,9 +64,17 @@ npm run build:desktop:mac    # produce macOS .dmg (run on macOS / CI)
 
 After `python -m app.seed`: **`owner@buildpilot360.dev` / `ChangeMe123!`** (rotate immediately).
 
-## Status
+## What's implemented
 
-Phase 0 (foundation: tenancy, auth, RBAC, audit) and the first slice of Phase 1 (requirement intake → AI analysis → backlog) are implemented and runnable. The remaining 25 modules are scaffolded as a roadmap in [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
+**Foundation (Phase 0):** multi-tenant data model, JWT auth, database-driven RBAC, append-only audit log.
+
+**Requirement → backlog flow (Phase 1):** requirement intake → provider-neutral AI analysis (gaps, questions, NFRs, acceptance criteria, confidence) → backlog generation → 16-stage story lifecycle board.
+
+**Entire blueprint as live data:** the full workbook is ingested into the platform DB — **27 modules, 1268 features, 470 user stories, 60 NFRs, 40 integrations, 155 screens**, plus roadmap, lifecycle, token-safe rules and verification gates (2,396 catalog items). All browsable and filterable in the web UI (`/features`, `/stories`, `/nfrs`, `/integrations`, `/screens`, `/roadmap`).
+
+**Metadata-driven module engine:** all 27 modules get working tenant-scoped **CRUD + search + bulk + lifecycle**, RBAC-gated and audited, through one generic endpoint family (`/api/v1/modules/{module_id}/records`) and a per-module workspace UI — the capability behind the 1248 features, without 1248 bespoke screens.
+
+See [docs/BLUEPRINT.md](docs/BLUEPRINT.md) for per-module status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
 
 ## License
 

@@ -76,6 +76,37 @@ textarea { min-height: 110px; resize: vertical; }
 .login-card h2 { text-align: center; margin: 4px 0 2px; }
 .login-card .sub { text-align: center; color: var(--slate); font-size: 13px; margin-bottom: 12px; }
 
+/* Nav groups */
+.nav-group { margin-bottom: 8px; }
+.nav-heading { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 8px 12px 4px; }
+
+/* Data tables */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { text-align: left; padding: 11px 14px; background: #f8fafc; color: var(--slate); font-weight: 500; border-bottom: 1px solid var(--line); position: sticky; top: 0; }
+.data-table td { padding: 11px 14px; border-bottom: 1px solid var(--line); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.data-table tr.clickable { cursor: pointer; }
+.data-table tbody tr:hover { background: #f8fafc; }
+
+/* Drawer */
+.drawer-overlay { position: absolute; inset: 0; background: rgba(15,23,42,.35); display: flex; justify-content: flex-end; z-index: 50; }
+.drawer { width: 460px; max-width: 90vw; height: 100%; background: #fff; padding: 24px; overflow-y: auto; box-shadow: -8px 0 24px rgba(0,0,0,.12); }
+.kv { margin: 14px 0 0; }
+.kv > div { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.kv dt { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--slate); }
+.kv dd { margin: 3px 0 0; font-size: 14px; white-space: pre-wrap; }
+
+/* Module grid */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.module-card { display: flex; flex-direction: column; min-height: 150px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; color: var(--ink); transition: border-color .15s, transform .1s; }
+.module-card:hover { border-color: var(--sky); transform: translateY(-2px); }
+.module-id { font-size: 12px; font-weight: 600; color: var(--indigo); }
+.module-name { font-size: 15px; font-weight: 600; margin-top: 2px; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: 14px; }
+.timeline-item { display: flex; gap: 14px; align-items: stretch; }
+.timeline-dot { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--brand-grad); color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 14px; margin-top: 6px; }
+
 /* Kanban */
 .board { display: grid; grid-auto-flow: column; grid-auto-columns: 260px; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
 .column { background: #f1f5f9; border-radius: 12px; padding: 12px; }

@@ -61,6 +61,18 @@ export interface LifecycleStage {
   stage_no: number; stage_name: string; status_code: string;
   primary_owner: string; verifier: string; exit_criteria: string;
 }
+export interface CatalogItem {
+  id: string; category: string; item_id: string | null; module_id: string | null;
+  title: string | null; domain: string | null; phase: string | null;
+  priority: string | null; status: string | null; data: Record<string, string>;
+}
+export interface CatalogPage { category: string; total: number; limit: number; offset: number; items: CatalogItem[]; }
+export interface CatalogSummary { counts: Record<string, number>; totals: Record<string, number>; }
+export interface ModuleInfo { module_id: string; name: string; domain: string; mvp_priority: string; data: Record<string, string>; }
+export interface ModuleRecord {
+  id: string; module_id: string; project_id: string | null; title: string;
+  status: string; priority: string; data: Record<string, unknown>; version: number;
+}
 
 export const api = {
   login: (email: string, password: string) =>
@@ -88,4 +100,29 @@ export const api = {
     request<Story>(`/api/v1/stories/${id}/status`, {
       method: "PATCH", body: JSON.stringify({ status_code }),
     }),
+
+  // Blueprint catalog (full workbook as data)
+  catalogSummary: () => request<CatalogSummary>("/api/v1/catalog/summary"),
+  catalog: (category: string, params: Record<string, string | number> = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).map(([k, v]) => [k, String(v)])
+    ).toString();
+    return request<CatalogPage>(`/api/v1/catalog/${category}${qs ? `?${qs}` : ""}`);
+  },
+
+  // Generic module engine (all 27 modules)
+  modules: () => request<ModuleInfo[]>("/api/v1/modules"),
+  moduleRecords: (moduleId: string, params: Record<string, string | number> = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).map(([k, v]) => [k, String(v)])
+    ).toString();
+    return request<{ module_id: string; total: number; items: ModuleRecord[] }>(
+      `/api/v1/modules/${moduleId}/records${qs ? `?${qs}` : ""}`);
+  },
+  createModuleRecord: (moduleId: string, body: { title: string; priority?: string; status?: string; data?: Record<string, unknown> }) =>
+    request<ModuleRecord>(`/api/v1/modules/${moduleId}/records`, {
+      method: "POST", body: JSON.stringify(body),
+    }),
+  deleteModuleRecord: (moduleId: string, recordId: string) =>
+    request<void>(`/api/v1/modules/${moduleId}/records/${recordId}`, { method: "DELETE" }),
 };

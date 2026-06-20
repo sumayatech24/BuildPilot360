@@ -28,6 +28,18 @@ pytest                        # end-to-end smoke test
 | GET  | `/api/v1/stories` | Backlog board data |
 | GET  | `/api/v1/stories/lifecycle` | 16-stage lifecycle config |
 | PATCH| `/api/v1/stories/{id}/status` | Lifecycle transition (audited) |
+| GET  | `/api/v1/catalog/summary` | Counts across the whole blueprint |
+| GET  | `/api/v1/catalog/{category}` | Browse/filter any sheet (feature, user_story, nfr, api_integration, screen, roadmap, …) |
+| GET  | `/api/v1/modules` | All 27 modules from the catalog |
+| GET/POST | `/api/v1/modules/{id}/records` | Generic tenant CRUD for any module |
+| POST | `/api/v1/modules/{id}/records/bulk` | Bulk create |
+| PUT/DELETE | `/api/v1/modules/{id}/records/{rid}` | Update / soft-delete (audited) |
+
+## Loading the blueprint
+
+`app/data/blueprint.json` (committed) is generated from the workbook by
+`scripts/ingest_blueprint.py` and loaded into `catalog_items` by `python -m app.seed`. Re-run the
+ingest script only if the source workbook changes.
 
 ## Design notes
 

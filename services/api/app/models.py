@@ -171,6 +171,41 @@ class LifecycleStage(SQLModel, table=True):
 
 
 # ---------------------------------------------------------------------------
+# Blueprint catalog (the full workbook, loaded as data — Platform Principle:
+# everything DB/API driven). One generic table holds all ~2300 catalog rows
+# across every sheet, with typed columns for the common filters.
+# ---------------------------------------------------------------------------
+class CatalogItem(SQLModel, table=True):
+    __tablename__ = "catalog_items"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    category: str = Field(index=True)  # module | feature | user_story | nfr | api_integration | screen | roadmap | ...
+    item_id: str | None = Field(default=None, index=True)  # natural id e.g. F-M01-001
+    module_id: str | None = Field(default=None, index=True)
+    title: str | None = None
+    domain: str | None = Field(default=None, index=True)
+    phase: str | None = Field(default=None, index=True)
+    priority: str | None = Field(default=None, index=True)
+    status: str | None = Field(default=None, index=True)
+    data_json: str = Field(default="{}")  # full original row
+
+
+# ---------------------------------------------------------------------------
+# Generic module engine (M01..M27) — tenant-scoped operational records.
+# Gives every module working CRUD/search/bulk/lifecycle without bespoke tables.
+# ---------------------------------------------------------------------------
+class ModuleRecord(AuditMixin, table=True):
+    __tablename__ = "module_records"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    tenant_id: str = Field(index=True, foreign_key="tenants.id")
+    module_id: str = Field(index=True)  # references CatalogItem(category='module').item_id
+    project_id: str | None = Field(default=None, index=True)
+    title: str
+    status: str = Field(default="active", index=True)
+    priority: str = Field(default="P2")
+    data_json: str = Field(default="{}")
+
+
+# ---------------------------------------------------------------------------
 # Audit (M21) — append-only trail
 # ---------------------------------------------------------------------------
 class AuditLog(SQLModel, table=True):

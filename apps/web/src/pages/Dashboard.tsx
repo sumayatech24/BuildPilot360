@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { api, Project, Requirement, Story, LifecycleStage } from "../api";
+import { api, Project, Requirement, Story, LifecycleStage, CatalogSummary } from "../api";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [reqs, setReqs] = useState<Requirement[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
   const [stages, setStages] = useState<LifecycleStage[]>([]);
+  const [summary, setSummary] = useState<CatalogSummary | null>(null);
 
   useEffect(() => {
     api.projects().then(setProjects).catch(() => {});
     api.requirements().then(setReqs).catch(() => {});
     api.stories().then(setStories).catch(() => {});
     api.lifecycle().then(setStages).catch(() => {});
+    api.catalogSummary().then(setSummary).catch(() => {});
   }, []);
 
   const done = stories.filter((s) => s.status_code === "DONE").length;
+  const t = summary?.totals;
 
   return (
     <>
@@ -25,10 +28,17 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="grid cols-4" style={{ marginBottom: 18 }}>
+        <Stat label="Modules" value={t?.modules ?? 0} />
+        <Stat label="Planned features" value={t?.features ?? 0} />
+        <Stat label="User stories" value={t?.user_stories ?? 0} />
+        <Stat label="NFRs & guardrails" value={t?.nfrs ?? 0} />
+      </div>
+
       <div className="grid cols-4">
         <Stat label="Projects" value={projects.length} />
         <Stat label="Requirements" value={reqs.length} />
-        <Stat label="Stories" value={stories.length} />
+        <Stat label="Stories generated" value={stories.length} />
         <Stat label="Stories closed" value={done} />
       </div>
 

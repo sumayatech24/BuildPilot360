@@ -5,6 +5,14 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Intake from "./pages/Intake";
 import Board from "./pages/Board";
+import Modules from "./pages/Modules";
+import ModuleWorkspace from "./pages/ModuleWorkspace";
+import Features from "./pages/Features";
+import Stories from "./pages/Stories";
+import Nfrs from "./pages/Nfrs";
+import Integrations from "./pages/Integrations";
+import Screens from "./pages/Screens";
+import Roadmap from "./pages/Roadmap";
 
 function Protected({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -13,13 +21,27 @@ function Protected({ children }: { children: JSX.Element }) {
   return <Shell>{children}</Shell>;
 }
 
+const routes: [string, JSX.Element][] = [
+  ["/", <Dashboard />],
+  ["/intake", <Intake />],
+  ["/board", <Board />],
+  ["/modules", <Modules />],
+  ["/modules/:moduleId", <ModuleWorkspace />],
+  ["/features", <Features />],
+  ["/stories", <Stories />],
+  ["/nfrs", <Nfrs />],
+  ["/integrations", <Integrations />],
+  ["/screens", <Screens />],
+  ["/roadmap", <Roadmap />],
+];
+
 function Inner() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Protected><Dashboard /></Protected>} />
-      <Route path="/intake" element={<Protected><Intake /></Protected>} />
-      <Route path="/board" element={<Protected><Board /></Protected>} />
+      {routes.map(([path, el]) => (
+        <Route key={path} path={path} element={<Protected>{el}</Protected>} />
+      ))}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

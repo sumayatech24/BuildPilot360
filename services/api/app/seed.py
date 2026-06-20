@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from sqlmodel import Session, select
 
+from app.catalog_loader import load_catalog
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.core.security import hash_password
@@ -31,6 +32,12 @@ PERMISSIONS: list[tuple[str, str, str]] = [
     ("story.read", "M05", "read"),
     ("story.create", "M05", "create"),
     ("story.update", "M05", "update"),
+    # Generic module engine (applies to all 27 modules)
+    ("module.read", "ALL", "read"),
+    ("module.create", "ALL", "create"),
+    ("module.update", "ALL", "update"),
+    ("module.delete", "ALL", "delete"),
+    ("module.bulk", "ALL", "bulk"),
 ]
 
 # Baseline roles -> permission codes ('*' = all). Roles/permissions are DB-driven (NFR-002).
@@ -39,10 +46,17 @@ ROLES: dict[str, list[str]] = {
     "Product Owner": [
         "project.read", "requirement.read", "requirement.create",
         "requirement.analyze", "story.read", "story.create", "story.update",
+        "module.read", "module.create", "module.update", "module.bulk",
     ],
-    "Developer": ["project.read", "requirement.read", "story.read", "story.update"],
-    "QA Engineer": ["project.read", "requirement.read", "story.read", "story.update"],
-    "Viewer": ["project.read", "requirement.read", "story.read"],
+    "Developer": [
+        "project.read", "requirement.read", "story.read", "story.update",
+        "module.read", "module.create", "module.update",
+    ],
+    "QA Engineer": [
+        "project.read", "requirement.read", "story.read", "story.update",
+        "module.read", "module.update",
+    ],
+    "Viewer": ["project.read", "requirement.read", "story.read", "module.read"],
 }
 
 # 16-stage lifecycle: (no, name, status_code, owner, verifier, ai, manual, exit, audit_event)
@@ -74,8 +88,11 @@ def seed() -> None:
         tenant = _seed_tenant(session)
         roles = _seed_roles(session, tenant.id)
         _seed_owner(session, tenant.id, roles["Owner"].id)
+        counts = load_catalog(session, replace=True)
         session.commit()
     print("Seed complete.")
+    if counts:
+        print("  Catalog loaded:", ", ".join(f"{k}={v}" for k, v in counts.items()))
     print(f"  Owner login: {settings.seed_owner_email} / {settings.seed_owner_password}")
     print("  Rotate this password immediately.")
 
