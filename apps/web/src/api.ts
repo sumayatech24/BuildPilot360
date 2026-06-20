@@ -48,7 +48,7 @@ export interface CurrentUser {
   roles: string[];
   permissions: string[];
 }
-export interface Project { id: string; name: string; code: string; description?: string; status: string; }
+export interface Project { id: string; name: string; code: string; description?: string; status: string; repo_url?: string | null; tech_stack?: string | null; default_branch?: string; }
 export interface Requirement { id: string; project_id: string; title: string; raw_text: string; source: string; status: string; priority: string; }
 export interface Analysis {
   id: string; requirement_id: string; summary: string; classification: string; confidence: number;
@@ -60,6 +60,7 @@ export interface Story {
   id: string; project_id: string; requirement_id: string | null; title: string;
   persona: string | null; story_text: string | null; acceptance_criteria: string[];
   priority: string; status_code: string;
+  rank?: number; mvp?: boolean; priority_score?: number; priority_rationale?: string | null;
 }
 export interface LifecycleStage {
   stage_no: number; stage_name: string; status_code: string;
@@ -77,6 +78,19 @@ export interface ModuleRecord {
   id: string; module_id: string; project_id: string | null; title: string;
   status: string; priority: string; data: Record<string, unknown>; version: number;
 }
+export interface Provider {
+  id: string; provider: string; label: string; masked_secret: string;
+  config: Record<string, unknown>; is_active: boolean;
+}
+export interface Usage { period: string; input_tokens: number; output_tokens: number; calls: number; monthly_budget: number; }
+export interface GenFile { path: string; language: string; content: string; kind?: string; }
+export interface Run {
+  id: string; project_id: string; story_id: string | null; kind: string;
+  provider: string; model: string | null; status: string;
+  input_tokens: number; output_tokens: number; branch: string | null;
+  pr_url: string | null; files: GenFile[]; rationale: string | null; log: string | null;
+}
+export interface RankedStory { id: string; rank: number; mvp: boolean; score: number; rationale: string | null; title: string; }
 
 const remoteApi = {
   login: (email: string, password: string) =>
@@ -86,12 +100,25 @@ const remoteApi = {
     }),
   me: () => request<CurrentUser>("/api/v1/auth/me"),
   projects: () => request<Project[]>("/api/v1/projects"),
-  createProject: (body: { name: string; code: string; description?: string }) =>
+  createProject: (body: { name: string; code: string; description?: string; repo_url?: string; tech_stack?: string; default_branch?: string }) =>
     request<Project>("/api/v1/projects", { method: "POST", body: JSON.stringify(body) }),
   requirements: (projectId?: string) =>
     request<Requirement[]>(`/api/v1/requirements${projectId ? `?project_id=${projectId}` : ""}`),
   createRequirement: (body: { project_id: string; title: string; raw_text: string }) =>
     request<Requirement>("/api/v1/requirements", { method: "POST", body: JSON.stringify(body) }),
+  uploadRequirement: async (projectId: string, title: string, file: File) => {
+    const fd = new FormData();
+    fd.append("project_id", projectId);
+    fd.append("title", title);
+    fd.append("file", file);
+    const res = await fetch(`${API_BASE}/api/v1/requirements/upload`, {
+      method: "POST",
+      headers: tokenStore.get() ? { Authorization: `Bearer ${tokenStore.get()}` } : {},
+      body: fd,
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+    return res.json() as Promise<Requirement>;
+  },
   analyze: (id: string) =>
     request<Analysis>(`/api/v1/requirements/${id}/analyze`, { method: "POST" }),
   generateBacklog: (id: string) =>
@@ -129,6 +156,29 @@ const remoteApi = {
     }),
   deleteModuleRecord: (moduleId: string, recordId: string) =>
     request<void>(`/api/v1/modules/${moduleId}/records/${recordId}`, { method: "DELETE" }),
+
+  // Integrations / Settings
+  providers: () => request<Provider[]>("/api/v1/integrations/providers"),
+  addProvider: (body: { provider: string; label: string; secret: string; config?: Record<string, unknown> }) =>
+    request<Provider>("/api/v1/integrations/providers", { method: "POST", body: JSON.stringify(body) }),
+  deleteProvider: (id: string) =>
+    request<void>(`/api/v1/integrations/providers/${id}`, { method: "DELETE" }),
+  testProvider: (id: string) =>
+    request<{ ok: boolean; detail: string }>(`/api/v1/integrations/providers/${id}/test`, { method: "POST" }),
+  usage: () => request<Usage>("/api/v1/integrations/usage"),
+
+  // Real AI pipeline
+  generateStories: (reqId: string) =>
+    request<Story[]>(`/api/v1/requirements/${reqId}/generate-stories`, { method: "POST" }),
+  prioritize: (projectId: string) =>
+    request<{ ranked: RankedStory[] }>(`/api/v1/projects/${projectId}/prioritize?mode=ai`, { method: "POST" }),
+  generateCode: (projectId: string, storyIds: string[]) =>
+    request<Run[]>(`/api/v1/projects/${projectId}/generate`, {
+      method: "POST", body: JSON.stringify({ story_ids: storyIds }),
+    }),
+  run: (id: string) => request<Run>(`/api/v1/runs/${id}`),
+  runs: (projectId?: string) =>
+    request<Run[]>(`/api/v1/runs${projectId ? `?project_id=${projectId}` : ""}`),
 };
 
 // localApi only imports *types* from this module (erased at build), so there is no runtime

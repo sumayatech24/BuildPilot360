@@ -108,6 +108,14 @@ textarea { min-height: 110px; resize: vertical; }
 .timeline-item { display: flex; gap: 14px; align-items: stretch; }
 .timeline-dot { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--brand-grad); color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 14px; margin-top: 6px; }
 
+/* Pipeline workspace */
+.pipeline { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.story-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.story-row:last-child { border-bottom: none; }
+.story-row input[type=checkbox] { width: auto; }
+.code { background: #0b1220; color: #e2e8f0; border-radius: 8px; padding: 12px; font-family: var(--brand-mono, "JetBrains Mono", Consolas, monospace); font-size: 12px; line-height: 1.5; overflow-x: auto; white-space: pre; max-height: 320px; }
+input[type=file] { padding: 8px; font-size: 13px; }
+
 /* Kanban */
 .board { display: grid; grid-auto-flow: column; grid-auto-columns: 260px; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
 .column { background: #f1f5f9; border-radius: 12px; padding: 12px; }

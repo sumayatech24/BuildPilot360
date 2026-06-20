@@ -4,9 +4,16 @@ import { useAuth } from "../auth";
 
 const groups: { heading: string; links: { to: string; label: string; end?: boolean }[] }[] = [
   {
-    heading: "Delivery",
+    heading: "Build",
     links: [
       { to: "/", label: "Dashboard", end: true },
+      { to: "/projects", label: "Projects" },
+      { to: "/settings", label: "Settings & keys" },
+    ],
+  },
+  {
+    heading: "Delivery",
+    links: [
       { to: "/intake", label: "Requirement intake" },
       { to: "/board", label: "Backlog board" },
     ],

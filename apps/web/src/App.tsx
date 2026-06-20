@@ -7,6 +7,9 @@ import Intake from "./pages/Intake";
 import Board from "./pages/Board";
 import Modules from "./pages/Modules";
 import ModuleWorkspace from "./pages/ModuleWorkspace";
+import Projects from "./pages/Projects";
+import ProjectWorkspace from "./pages/ProjectWorkspace";
+import Settings from "./pages/Settings";
 import Features from "./pages/Features";
 import Stories from "./pages/Stories";
 import Nfrs from "./pages/Nfrs";
@@ -23,6 +26,9 @@ function Protected({ children }: { children: JSX.Element }) {
 
 const routes: [string, JSX.Element][] = [
   ["/", <Dashboard />],
+  ["/projects", <Projects />],
+  ["/workspace/:projectId", <ProjectWorkspace />],
+  ["/settings", <Settings />],
   ["/intake", <Intake />],
   ["/board", <Board />],
   ["/modules", <Modules />],

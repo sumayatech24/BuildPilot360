@@ -3,7 +3,8 @@
 // so the deployed site is fully functional with no server or database.
 import type {
   Analysis, CatalogItem, CatalogPage, CatalogSummary, CurrentUser,
-  LifecycleStage, ModuleInfo, ModuleRecord, Project, Requirement, Story,
+  LifecycleStage, ModuleInfo, ModuleRecord, Project, Provider, RankedStory,
+  Requirement, Run, Story, Usage,
 } from "./api";
 
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
@@ -163,6 +164,13 @@ export const localApi = {
     write("requirements", [...list, r]);
     return r;
   },
+  uploadRequirement: async (projectId: string, title: string, file: File) => {
+    const text = await file.text();
+    const list = read<Requirement[]>("requirements", []);
+    const r: Requirement = { id: uuid(), project_id: projectId, title, raw_text: text, source: "file", status: "captured", priority: "P2" };
+    write("requirements", [...list, r]);
+    return r;
+  },
   analyze: async (id: string) => {
     const req = read<Requirement[]>("requirements", []).find((r) => r.id === id)!;
     const a = analyzeLocal(req.title, req.raw_text); a.requirement_id = id;
@@ -246,4 +254,71 @@ export const localApi = {
     const recs = read<ModuleRecord[]>(`records:${moduleId}`, []).filter((r) => r.id !== recordId);
     write(`records:${moduleId}`, recs);
   },
+
+  // --- Settings / AI pipeline (simulated in the static demo; real on the hosted backend) ---
+  providers: async () => read<Provider[]>("providers", []),
+  addProvider: async (body: { provider: string; label: string; secret: string; config?: Record<string, unknown> }) => {
+    const list = read<Provider[]>("providers", []);
+    const p: Provider = {
+      id: uuid(), provider: body.provider, label: body.label,
+      masked_secret: "••••" + body.secret.slice(-4), config: body.config || {}, is_active: true,
+    };
+    write("providers", [...list.filter((x) => x.provider !== body.provider), p]);
+    return p;
+  },
+  deleteProvider: async (id: string) => {
+    write("providers", read<Provider[]>("providers", []).filter((p) => p.id !== id));
+  },
+  testProvider: async () => ({ ok: true, detail: "Demo mode — key stored locally, not validated." }),
+  usage: async (): Promise<Usage> => ({ period: new Date().toISOString().slice(0, 7), input_tokens: 0, output_tokens: 0, calls: 0, monthly_budget: 2000000 }),
+
+  generateStories: async (reqId: string) => {
+    const req = read<Requirement[]>("requirements", []).find((r) => r.id === reqId)!;
+    const a = analyzeLocal(req.title, req.raw_text);
+    const stories = read<Story[]>("stories", []);
+    const created: Story[] = a.suggested_stories.map((s) => ({
+      id: uuid(), project_id: req.project_id, requirement_id: reqId, title: s.title,
+      persona: s.persona, story_text: `As a ${s.persona}, I want to ${s.capability} in ${req.title}.`,
+      acceptance_criteria: a.acceptance_criteria, priority: req.priority, status_code: "STORY_DRAFT",
+      rank: 0, mvp: false, priority_score: 0, priority_rationale: null,
+    }) as Story);
+    write("stories", [...stories, ...created]);
+    return created;
+  },
+  prioritize: async (projectId: string): Promise<{ ranked: RankedStory[] }> => {
+    const stories = read<Story[]>("stories", []).filter((s) => s.project_id === projectId);
+    const ranked: RankedStory[] = stories.map((s, i) => ({
+      id: s.id, rank: i + 1, mvp: i < Math.ceil(stories.length / 2),
+      score: 100 - i * 7, rationale: i < 2 ? "High value, low dependency." : "Deferrable.", title: s.title,
+    }));
+    const updated = read<Story[]>("stories", []).map((s) => {
+      const r = ranked.find((x) => x.id === s.id);
+      return r ? { ...s, rank: r.rank, mvp: r.mvp, priority_score: r.score, priority_rationale: r.rationale } : s;
+    });
+    write("stories", updated);
+    return { ranked };
+  },
+  generateCode: async (projectId: string, storyIds: string[]): Promise<Run[]> => {
+    const stories = read<Story[]>("stories", []);
+    const runs = storyIds.map((sid) => {
+      const story = stories.find((s) => s.id === sid);
+      const slug = (story?.title || "feature").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      const run: Run = {
+        id: uuid(), project_id: projectId, story_id: sid, kind: "code",
+        provider: "mock", model: "demo", status: "succeeded", input_tokens: 0, output_tokens: 0,
+        branch: null, pr_url: null,
+        files: [
+          { path: `src/${slug}.py`, language: "python", content: `def ${slug}():\n    return True\n`, kind: "files" },
+          { path: `tests/test_${slug}.py`, language: "python", content: `def test_${slug}():\n    assert True\n`, kind: "tests" },
+        ],
+        rationale: "Demo simulation — connect the backend + a key for real generation.", log: "Demo run.",
+      };
+      write(`run:${run.id}`, run);
+      return run;
+    });
+    write(`runs:${projectId}`, [...read<Run[]>(`runs:${projectId}`, []), ...runs]);
+    return runs;
+  },
+  run: async (id: string) => read<Run | null>(`run:${id}`, null) as Run,
+  runs: async (projectId?: string) => projectId ? read<Run[]>(`runs:${projectId}`, []) : [],
 };
