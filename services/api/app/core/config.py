@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./buildpilot360.db"
     # Optional dedicated Postgres schema to isolate tables on a shared database.
     db_schema: str = ""
+    # One-time guarded reset of the dedicated schema (drops ONLY db_schema, never public).
+    reset_schema: bool = False
 
     jwt_secret: str = "change-me-to-a-long-random-string"
     jwt_algorithm: str = "HS256"

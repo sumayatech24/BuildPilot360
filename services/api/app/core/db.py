@@ -31,8 +31,10 @@ engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True, connect_arg
 if IS_POSTGRES and DB_SCHEMA:
     @event.listens_for(engine, "connect")
     def _set_search_path(dbapi_conn, _record):  # noqa: ANN001
+        # Restrict to the dedicated schema ONLY — never include public — so table-existence
+        # checks and FK resolution can't pick up another app's tables on a shared database.
         with dbapi_conn.cursor() as cur:
-            cur.execute(f'SET search_path TO "{DB_SCHEMA}", public')
+            cur.execute(f'SET search_path TO "{DB_SCHEMA}"')
 
 
 def init_db() -> None:
@@ -41,6 +43,9 @@ def init_db() -> None:
 
     if IS_POSTGRES and DB_SCHEMA:
         with engine.begin() as conn:
+            if settings.reset_schema:
+                # Guarded: only ever drops our own dedicated schema, never public.
+                conn.exec_driver_sql(f'DROP SCHEMA IF EXISTS "{DB_SCHEMA}" CASCADE')
             conn.exec_driver_sql(f'CREATE SCHEMA IF NOT EXISTS "{DB_SCHEMA}"')
     SQLModel.metadata.create_all(engine)
 
