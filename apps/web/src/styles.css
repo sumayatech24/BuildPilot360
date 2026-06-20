@@ -75,6 +75,7 @@ textarea { min-height: 110px; resize: vertical; }
 .login-card .brand img { width: 64px; height: 64px; }
 .login-card h2 { text-align: center; margin: 4px 0 2px; }
 .login-card .sub { text-align: center; color: var(--slate); font-size: 13px; margin-bottom: 12px; }
+.demo-note { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; font-size: 12px; line-height: 1.5; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
 
 /* Nav groups */
 .nav-group { margin-bottom: 8px; }

@@ -1,9 +1,13 @@
 // Thin API client. Base URL is config-driven (Vercel env / Electron injected global).
+// When no backend is configured, the app falls back to a fully client-side data layer
+// (localApi) so the static build is a working app with no server required.
+import { localApi } from "./localApi";
+
 const w = window as unknown as { __BP360_API_BASE__?: string };
-export const API_BASE =
-  w.__BP360_API_BASE__ ||
-  (import.meta.env.VITE_API_BASE_URL as string) ||
-  "http://localhost:8000";
+const CONFIGURED_BASE =
+  w.__BP360_API_BASE__ || (import.meta.env.VITE_API_BASE_URL as string) || "";
+export const USE_LOCAL = !CONFIGURED_BASE;
+export const API_BASE = CONFIGURED_BASE || "http://localhost:8000";
 
 const TOKEN_KEY = "bp360_token";
 
@@ -74,7 +78,7 @@ export interface ModuleRecord {
   status: string; priority: string; data: Record<string, unknown>; version: number;
 }
 
-export const api = {
+const remoteApi = {
   login: (email: string, password: string) =>
     request<{ access_token: string }>("/api/v1/auth/login", {
       method: "POST",
@@ -126,3 +130,9 @@ export const api = {
   deleteModuleRecord: (moduleId: string, recordId: string) =>
     request<void>(`/api/v1/modules/${moduleId}/records/${recordId}`, { method: "DELETE" }),
 };
+
+// localApi only imports *types* from this module (erased at build), so there is no runtime
+// cycle. Bind to it when no backend is configured — that's what makes the static build work.
+export const api: typeof remoteApi = USE_LOCAL
+  ? (localApi as unknown as typeof remoteApi)
+  : remoteApi;

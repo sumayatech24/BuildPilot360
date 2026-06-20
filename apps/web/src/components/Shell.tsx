@@ -31,7 +31,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <img src="/logo-mark.svg" alt="BuildPilot360" />
+          <img src={`${import.meta.env.BASE_URL}logo-mark.svg`} alt="BuildPilot360" />
           <b>BuildPilot<span>360</span></b>
         </div>
         {groups.map((g) => (
