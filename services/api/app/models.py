@@ -88,6 +88,10 @@ class Project(AuditMixin, table=True):
     code: str = Field(index=True)
     description: str | None = None
     status: str = Field(default="active")
+    # Target repo + stack drive AI code generation (M10/M11).
+    repo_url: str | None = None       # e.g. https://github.com/owner/repo
+    tech_stack: str | None = None     # e.g. "FastAPI + React + Postgres"
+    default_branch: str = Field(default="main")
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +155,12 @@ class Story(AuditMixin, table=True):
     estimate: int | None = None
     # lifecycle status code from the Story Lifecycle Workflow (config table below)
     status_code: str = Field(default="STORY_DRAFT", index=True)
+    # AI/manual prioritization (M04)
+    rank: int = Field(default=0, index=True)
+    mvp: bool = Field(default=False, index=True)
+    priority_score: float = Field(default=0.0)
+    priority_rationale: str | None = None
+    dependencies: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +213,53 @@ class ModuleRecord(AuditMixin, table=True):
     status: str = Field(default="active", index=True)
     priority: str = Field(default="P2")
     data_json: str = Field(default="{}")
+
+
+# ---------------------------------------------------------------------------
+# Integrations / provider credentials (M20) — encrypted secrets
+# ---------------------------------------------------------------------------
+class ProviderCredential(AuditMixin, table=True):
+    __tablename__ = "provider_credentials"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    tenant_id: str = Field(index=True, foreign_key="tenants.id")
+    provider: str = Field(index=True)  # anthropic | openai | github | aws | azure | gcp
+    label: str
+    secret_encrypted: str  # Fernet-encrypted; never returned raw
+    config_json: str = Field(default="{}")  # model, base_url, etc.
+    is_active: bool = Field(default=True, index=True)
+
+
+# ---------------------------------------------------------------------------
+# AI generation runs (M10) — code/test generation lifecycle + token usage
+# ---------------------------------------------------------------------------
+class GenerationRun(AuditMixin, table=True):
+    __tablename__ = "generation_runs"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    tenant_id: str = Field(index=True, foreign_key="tenants.id")
+    project_id: str = Field(index=True, foreign_key="projects.id")
+    story_id: str | None = Field(default=None, index=True, foreign_key="stories.id")
+    kind: str = Field(default="code")  # code | tests
+    provider: str = Field(default="stub")
+    model: str | None = None
+    status: str = Field(default="queued", index=True)  # queued|running|succeeded|failed
+    input_tokens: int = Field(default=0)
+    output_tokens: int = Field(default=0)
+    branch: str | None = None
+    pr_url: str | None = None
+    files_json: str = Field(default="[]")
+    rationale: str | None = None
+    log: str | None = None
+
+
+class LlmUsage(SQLModel, table=True):
+    """Per-tenant monthly token usage, for the budget guardrail (NFR-043)."""
+    __tablename__ = "llm_usage"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    tenant_id: str = Field(index=True)
+    period: str = Field(index=True)  # YYYY-MM
+    input_tokens: int = Field(default=0)
+    output_tokens: int = Field(default=0)
+    calls: int = Field(default=0)
 
 
 # ---------------------------------------------------------------------------

@@ -38,15 +38,20 @@ PERMISSIONS: list[tuple[str, str, str]] = [
     ("module.update", "ALL", "update"),
     ("module.delete", "ALL", "delete"),
     ("module.bulk", "ALL", "bulk"),
+    # AI orchestration (M10/M20)
+    ("integration.manage", "M20", "manage"),
+    ("story.generate", "M03", "generate"),
+    ("code.generate", "M10", "generate"),
 ]
 
 # Baseline roles -> permission codes ('*' = all). Roles/permissions are DB-driven (NFR-002).
 ROLES: dict[str, list[str]] = {
     "Owner": ["*"],
     "Product Owner": [
-        "project.read", "requirement.read", "requirement.create",
+        "project.read", "project.create", "requirement.read", "requirement.create",
         "requirement.analyze", "story.read", "story.create", "story.update",
         "module.read", "module.create", "module.update", "module.bulk",
+        "integration.manage", "story.generate", "code.generate",
     ],
     "Developer": [
         "project.read", "requirement.read", "story.read", "story.update",

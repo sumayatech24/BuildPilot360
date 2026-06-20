@@ -6,6 +6,9 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
+from fastapi import File, Form, UploadFile
+
+from app.ai import llm
 from app.ai.provider import get_provider
 from app.core.audit import record_audit
 from app.core.db import get_session
@@ -17,7 +20,9 @@ from app.schemas import (
     GenerateBacklogResponse,
     RequirementCreate,
     RequirementRead,
+    StoryRead,
 )
+from app.services import pipeline
 
 router = APIRouter(prefix="/api/v1/requirements", tags=["requirements"])
 
@@ -66,6 +71,62 @@ def create_requirement(
     session.commit()
     session.refresh(req)
     return req
+
+
+@router.post("/upload", response_model=RequirementRead, status_code=201)
+async def upload_requirement(
+    project_id: str = Form(...),
+    title: str = Form(...),
+    file: UploadFile = File(...),
+    priority: str = Form("P2"),
+    session: Session = Depends(get_session),
+    current: CurrentUser = Depends(require_permission("requirement.create")),
+) -> Requirement:
+    """Upload a requirements/stories doc (.md/.txt/.csv) as a requirement."""
+    raw = (await file.read()).decode("utf-8", errors="replace")[:200_000]
+    req = Requirement(
+        tenant_id=current.tenant_id, project_id=project_id, title=title,
+        raw_text=raw, source="file", priority=priority,
+        created_by=current.id, updated_by=current.id,
+    )
+    session.add(req)
+    session.flush()
+    record_audit(session, action="requirement.upload", entity="requirement", entity_id=req.id,
+                 tenant_id=current.tenant_id, actor_id=current.id,
+                 after={"filename": file.filename})
+    session.commit()
+    session.refresh(req)
+    return req
+
+
+@router.post("/{req_id}/generate-stories", response_model=list[StoryRead], status_code=201)
+def generate_stories(
+    req_id: str,
+    session: Session = Depends(get_session),
+    current: CurrentUser = Depends(require_permission("story.generate")),
+) -> list[StoryRead]:
+    """Real AI: turn a requirement into user stories (token-budgeted)."""
+    req = _owned(session, req_id, current.tenant_id)
+    try:
+        stories = pipeline.generate_stories(session, current.tenant_id, req, current.id)
+    except llm.BudgetExceeded as e:
+        raise HTTPException(status_code=429, detail=str(e))
+    record_audit(session, action="requirement.stories_generated", entity="requirement",
+                 entity_id=req.id, tenant_id=current.tenant_id, actor_id=current.id,
+                 after={"count": len(stories)})
+    session.commit()
+    return [_story_read(s) for s in stories]
+
+
+def _story_read(s: Story) -> StoryRead:
+    return StoryRead(
+        id=s.id, project_id=s.project_id, requirement_id=s.requirement_id, title=s.title,
+        persona=s.persona, story_text=s.story_text,
+        acceptance_criteria=json.loads(s.acceptance_criteria_json or "[]"),
+        priority=s.priority, status_code=s.status_code, rank=s.rank, mvp=s.mvp,
+        priority_score=s.priority_score, priority_rationale=s.priority_rationale,
+        created_at=s.created_at,
+    )
 
 
 @router.post("/{req_id}/analyze", response_model=AnalysisRead)

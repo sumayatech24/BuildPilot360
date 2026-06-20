@@ -8,6 +8,9 @@ bcrypt==4.0.1
 PyJWT==2.10.1
 python-multipart==0.0.20
 httpx==0.28.1
+# Real LLM provider (official SDK) + secret encryption
+anthropic==0.69.0
+cryptography==44.0.0
 # Optional production driver (PostgreSQL). SQLite is used by default.
 psycopg[binary]==3.2.3
 pytest==8.3.4

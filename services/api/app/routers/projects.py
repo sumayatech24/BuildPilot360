@@ -8,7 +8,7 @@ from app.core.audit import record_audit
 from app.core.db import get_session
 from app.core.deps import require_permission
 from app.models import Project
-from app.schemas import CurrentUser, ProjectCreate, ProjectRead
+from app.schemas import CurrentUser, ProjectCreateFull, ProjectRead
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 
@@ -27,7 +27,7 @@ def list_projects(
 
 @router.post("", response_model=ProjectRead, status_code=201)
 def create_project(
-    body: ProjectCreate,
+    body: ProjectCreateFull,
     session: Session = Depends(get_session),
     current: CurrentUser = Depends(require_permission("project.create")),
 ) -> Project:
@@ -36,6 +36,9 @@ def create_project(
         name=body.name,
         code=body.code,
         description=body.description,
+        repo_url=body.repo_url,
+        tech_stack=body.tech_stack,
+        default_branch=body.default_branch,
         created_by=current.id,
         updated_by=current.id,
     )

@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     ai_api_key: str = ""
     ai_model: str = ""
 
+    # Encryption key for stored provider secrets. Set a dedicated value in production.
+    secret_enc_key: str = ""
+    # Cost guardrails (protect the user's LLM quota).
+    llm_default_model: str = "claude-opus-4-8"
+    llm_max_output_tokens: int = 8000
+    llm_effort: str = "medium"  # low | medium | high
+    monthly_token_budget: int = 2_000_000  # block LLM calls past this per tenant/month
+
     # Auto-create tables + seed master/config + load the blueprint on first boot.
     # Lets a hosted deploy come up populated with no manual step.
     seed_on_start: bool = False

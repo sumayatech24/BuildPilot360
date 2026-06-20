@@ -9,7 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.core.config import settings
 from app.core.db import init_db
-from app.routers import auth, catalog, modules, projects, requirements, stories
+from app.routers import (
+    auth, catalog, generation, integrations, modules, prioritization,
+    projects, requirements, stories,
+)
 
 
 @asynccontextmanager
@@ -52,6 +55,9 @@ app.include_router(requirements.router)
 app.include_router(stories.router)
 app.include_router(catalog.router)
 app.include_router(modules.router)
+app.include_router(integrations.router)
+app.include_router(prioritization.router)
+app.include_router(generation.router)
 
 
 @app.get("/", tags=["meta"])

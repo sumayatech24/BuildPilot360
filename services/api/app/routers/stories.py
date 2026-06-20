@@ -26,6 +26,10 @@ def _to_read(s: Story) -> StoryRead:
         acceptance_criteria=json.loads(s.acceptance_criteria_json or "[]"),
         priority=s.priority,
         status_code=s.status_code,
+        rank=s.rank,
+        mvp=s.mvp,
+        priority_score=s.priority_score,
+        priority_rationale=s.priority_rationale,
         created_at=s.created_at,
     )
 
