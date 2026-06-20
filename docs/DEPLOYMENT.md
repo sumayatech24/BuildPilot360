@@ -1,7 +1,21 @@
 # Deployment guide
 
-BuildPilot360 ships in three forms from one repo: **web (Vercel)**, **desktop installers
+BuildPilot360 ships in three forms from one repo: **web**, **desktop installers
 (Windows .exe + macOS .dmg)**, and the **API** (any container host).
+
+## 0. Live demo — GitHub Pages (zero credentials)
+
+The web app is **static-first**: when no backend is configured it runs entirely in the browser,
+serving the full blueprint from a bundled JSON and persisting data in `localStorage`. `.github/
+workflows/deploy-pages.yml` builds it and publishes to GitHub Pages using the repo's built-in
+`GITHUB_TOKEN` on every push to `main`.
+
+- **URL:** https://sumayatech24.github.io/BuildPilot360/
+- If the first run reports Pages isn't enabled, open **Settings → Pages → Build and deployment →
+  Source: GitHub Actions** once, then re-run the workflow.
+
+This is the quickest "working version." For server-side multi-tenancy, point the web app at the
+hosted API (below) by setting `VITE_API_BASE_URL`.
 
 ## 1. Web → Vercel
 
