@@ -26,13 +26,20 @@ IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 DB_SCHEMA = settings.db_schema.strip()
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True, connect_args=connect_args)
+# schema_translate_map makes SQLAlchemy emit fully schema-qualified names (buildpilot360.users)
+# in the generated SQL. This is robust through transaction-mode connection poolers (pgbouncer,
+# which Render's managed Postgres uses) where a session-level `SET search_path` issued at connect
+# time does NOT reliably persist across transactions. No reliance on connection session state.
+_exec_opts: dict = {}
+if IS_POSTGRES and DB_SCHEMA:
+    _exec_opts["schema_translate_map"] = {None: DB_SCHEMA}
+engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True,
+                       connect_args=connect_args, execution_options=_exec_opts)
 
 if IS_POSTGRES and DB_SCHEMA:
     @event.listens_for(engine, "connect")
     def _set_search_path(dbapi_conn, _record):  # noqa: ANN001
-        # Restrict to the dedicated schema ONLY — never include public — so table-existence
-        # checks and FK resolution can't pick up another app's tables on a shared database.
+        # Belt-and-suspenders for raw SQL paths; primary isolation is schema_translate_map above.
         with dbapi_conn.cursor() as cur:
             cur.execute(f'SET search_path TO "{DB_SCHEMA}"')
 
