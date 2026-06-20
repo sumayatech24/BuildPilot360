@@ -2,15 +2,20 @@
 
 **AI SDLC Delivery Platform** — turn raw requirements into governed, traceable, AI-assisted software delivery: requirement intake → AI analysis → backlog generation → test design → PM/Git sync → CI/CD → cloud & data deployment, with token-safe LLM execution and manual verification gates.
 
-> **▶ Deploy the full stack (free) — Postgres + API + web:**
+> **▶ Live (full stack on Render — Postgres + API + web):**
 >
+> | | URL |
+> |---|---|
+> | **App** | https://buildpilot360-web.onrender.com |
+> | **API + docs** | https://buildpilot360-api.onrender.com/docs |
+>
+> Login: `owner@buildpilot360.dev` / `Bp360-Owner!2026` (rotate this).
+> The web app talks to the real FastAPI backend over PostgreSQL — multi-tenant, RBAC, audit,
+> the full module engine, and all 1268 features as live data. *(Render's free tier sleeps after
+> ~15 min idle, so the first request after a nap takes ~50s to wake.)*
+>
+> Reproducible infra: [`render.yaml`](render.yaml) blueprint, or
 > [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sumayatech24/BuildPilot360)
->
-> One click reads [`render.yaml`](render.yaml) and provisions a free PostgreSQL database, the
-> FastAPI backend (Docker, auto-seeded on first boot), and the web app — all wired together.
-> Validated end-to-end against real Postgres via Docker.
->
-> Static browser-only demo (no backend): https://sumayatech24.github.io/BuildPilot360/
 
 Built from the *AI Automated SDLC Platform Blueprint (v3)* — 27 modules, 1248 planned features, 450 user stories, 74 DB tables. This repository implements the **Phase 0 foundation + start of the Phase 1 MVP** as a fully runnable product across three delivery targets.
 
