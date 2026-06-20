@@ -33,7 +33,7 @@ services:
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "720"
       - key: CORS_ORIGINS
-        value: https://buildpilot360-web.onrender.com,https://sumayatech24.github.io
+        value: "*"   # Bearer-token auth, no cookies — safe; works regardless of the web URL
       - key: SEED_OWNER_EMAIL
         value: owner@buildpilot360.dev
       - key: SEED_OWNER_PASSWORD

@@ -32,11 +32,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Auth uses Bearer tokens (not cookies), so wildcard CORS is safe — and it keeps a hosted
+# deploy working no matter what URL the web app is served from. Credentials are only enabled
+# when an explicit origin allowlist is configured.
+_origins = settings.cors_origin_list
+_wildcard = "*" in _origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list,
-    allow_origin_regex=r"^app://.*$",
-    allow_credentials=True,
+    allow_origins=["*"] if _wildcard else _origins,
+    allow_origin_regex=None if _wildcard else r"^app://.*$",
+    allow_credentials=not _wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )
