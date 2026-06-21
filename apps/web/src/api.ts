@@ -17,27 +17,58 @@ export const tokenStore = {
   clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// Free hosting (Render) sleeps the API after ~15 min idle; the first calls then return
+// gateway errors (502/503/504) or fail to connect for ~50s while it wakes. Retry those
+// transparently so the app doesn't look broken on first use, and surface a "waking" banner.
+const COLD_START_CODES = [502, 503, 504, 429];
+function emit(name: string) {
+  try { window.dispatchEvent(new CustomEvent(name)); } catch { /* ignore */ }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStore.get();
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    let detail = res.statusText;
+  const url = `${API_BASE}${path}`;
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+  const maxAttempts = 10;
+  let signalledWaking = false;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      detail = (await res.json()).detail || detail;
-    } catch {
-      /* ignore */
+      const res = await fetch(url, { ...options, headers });
+      if (COLD_START_CODES.includes(res.status) && attempt < maxAttempts - 1) {
+        if (!signalledWaking) { signalledWaking = true; emit("bp360:waking"); }
+        await sleep(Math.min(2000 + attempt * 1200, 7000));
+        continue;
+      }
+      if (signalledWaking) emit("bp360:ready");
+      if (!res.ok) {
+        let detail = res.statusText;
+        try { detail = (await res.json()).detail || detail; } catch { /* ignore */ }
+        throw new Error(detail);
+      }
+      if (res.status === 204) return undefined as T;
+      return (await res.json()) as T;
+    } catch (e) {
+      // Network/connection error (server still waking, or transient) — retry.
+      lastError = e as Error;
+      const isNetwork = e instanceof TypeError;
+      if (isNetwork && attempt < maxAttempts - 1) {
+        if (!signalledWaking) { signalledWaking = true; emit("bp360:waking"); }
+        await sleep(Math.min(2000 + attempt * 1200, 7000));
+        continue;
+      }
+      if (signalledWaking) emit("bp360:ready");
+      throw lastError;
     }
-    throw new Error(detail);
   }
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  if (signalledWaking) emit("bp360:ready");
+  throw lastError || new Error("Request failed");
 }
 
 export interface CurrentUser {
@@ -107,17 +138,29 @@ const remoteApi = {
   createRequirement: (body: { project_id: string; title: string; raw_text: string }) =>
     request<Requirement>("/api/v1/requirements", { method: "POST", body: JSON.stringify(body) }),
   uploadRequirement: async (projectId: string, title: string, file: File) => {
-    const fd = new FormData();
-    fd.append("project_id", projectId);
-    fd.append("title", title);
-    fd.append("file", file);
-    const res = await fetch(`${API_BASE}/api/v1/requirements/upload`, {
-      method: "POST",
-      headers: tokenStore.get() ? { Authorization: `Bearer ${tokenStore.get()}` } : {},
-      body: fd,
-    });
-    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
-    return res.json() as Promise<Requirement>;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const fd = new FormData();
+      fd.append("project_id", projectId);
+      fd.append("title", title);
+      fd.append("file", file);
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/requirements/upload`, {
+          method: "POST",
+          headers: tokenStore.get() ? { Authorization: `Bearer ${tokenStore.get()}` } : {},
+          body: fd,
+        });
+        if (COLD_START_CODES.includes(res.status) && attempt < 9) {
+          emit("bp360:waking"); await sleep(Math.min(2000 + attempt * 1200, 7000)); continue;
+        }
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+        emit("bp360:ready");
+        return res.json() as Promise<Requirement>;
+      } catch (e) {
+        if (e instanceof TypeError && attempt < 9) { emit("bp360:waking"); await sleep(3000); continue; }
+        throw e;
+      }
+    }
+    throw new Error("Upload failed");
   },
   analyze: (id: string) =>
     request<Analysis>(`/api/v1/requirements/${id}/analyze`, { method: "POST" }),

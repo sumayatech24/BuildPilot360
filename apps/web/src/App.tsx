@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth";
 import { Shell } from "./components/Shell";
+import { WakingBanner } from "./components/WakingBanner";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Intake from "./pages/Intake";
@@ -56,6 +57,7 @@ function Inner() {
 export default function App() {
   return (
     <AuthProvider>
+      <WakingBanner />
       <Inner />
     </AuthProvider>
   );
