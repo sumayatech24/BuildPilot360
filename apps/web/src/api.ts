@@ -18,6 +18,13 @@ export const tokenStore = {
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Ping /health to wake the free-tier server early (on page load) and keep it warm during a
+// session, so the user rarely hits the ~50s cold start. Fire-and-forget; ignores failures.
+export function warmUp(): void {
+  if (USE_LOCAL) return;
+  fetch(`${API_BASE}/health`).catch(() => {});
+}
 // Free hosting (Render) sleeps the API after ~15 min idle; the first calls then return
 // gateway errors (502/503/504) or fail to connect for ~50s while it wakes. Retry those
 // transparently so the app doesn't look broken on first use, and surface a "waking" banner.

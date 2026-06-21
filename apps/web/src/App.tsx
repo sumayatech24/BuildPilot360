@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { warmUp } from "./api";
 import { AuthProvider, useAuth } from "./auth";
 import { Shell } from "./components/Shell";
 import { WakingBanner } from "./components/WakingBanner";
@@ -55,6 +57,11 @@ function Inner() {
 }
 
 export default function App() {
+  useEffect(() => {
+    warmUp(); // wake the server on page load
+    const t = setInterval(warmUp, 10 * 60 * 1000); // keep warm during the session
+    return () => clearInterval(t);
+  }, []);
   return (
     <AuthProvider>
       <WakingBanner />
